@@ -2,10 +2,12 @@ package com.example.demo.dto.in;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.URL;
 
 @Data
+@Builder
 public class MerchantUpdateDto {
 
     @Email(message = "El formato del email no es válido")

@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.in.MerchantCreateDTO;
+import com.example.demo.dto.in.MerchantUpdateDto;
 import com.example.demo.entity.Merchant;
 import com.example.demo.mappers.MerchantMapper;
 import com.example.demo.repository.MerchantRepository;
@@ -30,10 +31,11 @@ public class MerchantServiceTest {
     @Mock
     private MerchantMapper _merchantMapper;
 
-    private final static String INVALIDID = "123-invalido";
+    private final static String INVALID_ID = "123-invalido";
+    private final static String VALID_ID = "b56d4b9b-32b3-4a97-9e53-74a8b6f2db24";
 
     @Test
-    @DisplayName("No debe permitir guardar un merchant con un nombre duplicado")
+    @DisplayName("No permite guardar un merchant si el nombre ya existe")
     public void shouldNotAllowDuplicateMerchantName() {
 
         this.mockIfEmailExists(false);
@@ -45,7 +47,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("No debe permitir guardar un merchant con un email duplicado")
+    @DisplayName("No permite guardar un merchant si el email ya existe")
     public void shouldNotAllowDuplicateMerchantEmail() {
 
         this.mockIfEmailExists(true);
@@ -98,42 +100,204 @@ public class MerchantServiceTest {
     @Test
     @DisplayName("Debe retornar un merchant válido cuando se busca por ID existente")
     public void shouldReturnMerchantWhenIdExists(){
-        when(_merchantRepository.findById("b56d4b9b-32b3-4a97-9e53-74a8b6f2db24"))
+        when(_merchantRepository.findById(VALID_ID))
                 .thenReturn(Optional.of(
                         createOjectMerchant(
-                                "test@gmail.com",
-                                "test2",
-                                "la casa de test2",
-                                "test2@gmail.com",
-                                "comercio de test2",
-                                "1234567891234567854",
-                                "b56d4b9b-32b3-4a97-9e53-74a8b6f2db24"
+                                true
                         )
                 ));
 
-        Merchant merchant = _merchantService.findById("b56d4b9b-32b3-4a97-9e53-74a8b6f2db24");
+        Merchant merchant = _merchantService.findById(VALID_ID);
         assertNotNull(merchant);
-        assertEquals("b56d4b9b-32b3-4a97-9e53-74a8b6f2db24", merchant.getMerchantId());
+        assertEquals(VALID_ID, merchant.getMerchantId());
     }
 
     @Test
     @DisplayName("Debe lanzar excepción cuando se busca un ID inexistente")
     public void shouldNotFindMerchantWhenIdDoesNotExist() {
-        when(_merchantRepository.findById("b56d4b9b-32b3-4a97-9e53-74a8b6f2db28"))
+        when(_merchantRepository.findById(VALID_ID))
                 .thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () -> {
-            _merchantService.findById("b56d4b9b-32b3-4a97-9e53-74a8b6f2db28");
+            _merchantService.findById(VALID_ID);
         });
     }
 
     @Test
-    @DisplayName("Debe lanzar IllegalArgumentException si el UUID es inválido")
+    @DisplayName("Lanza IllegalArgumentException al buscar merchant con UUID inválido")
     public void shouldThrowExceptionForInvalidUUID() {
 
         assertThrows(IllegalArgumentException.class, () -> {
-            _merchantService.findById(INVALIDID);
+            _merchantService.findById(INVALID_ID);
         });
+    }
+
+    //test
+    @Test
+    @DisplayName("Lanza IllegalArgumentException al activar merchant con UUID inválido")
+    public void shouldThrowExceptionWhenUUIDIsInvalid() {
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            _merchantService.activate(INVALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalStateException al intentar activar un merchant ya activo")
+    public void shouldThrowExceptionWhenMerchantIsAlreadyActive() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        true
+                )));
+
+        assertThrows(IllegalStateException.class, () -> {
+            _merchantService.activate(VALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Debe lanzar NoSuchElementException si no se activa ningún merchant")
+    public void shouldThrowNoSuchElementExceptionWhenNoMerchantIsActivated() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        false
+                )));
+
+        when(_merchantRepository.activeMerchant(VALID_ID)).
+                thenReturn(0);
+
+        assertThrows(NoSuchElementException.class, () -> {
+            _merchantService.activate(VALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Retorna mensaje de éxito al activar un merchant existente correctamente")
+    public void shouldReturnActivateSuccessWhenMerchantIsActivated() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        false
+                )));
+
+        when(_merchantRepository.activeMerchant(VALID_ID))
+                .thenReturn(1);
+
+        String message = this._merchantService.activate(VALID_ID);
+        assertNotNull(message);
+        assertFalse(message.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalArgumentException al desactivar un merchant con UUID inválido")
+    public void shouldThrowExceptionWhenDisableMerchantWithInvalidUUID() {
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            this._merchantService.disabled(INVALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalStateException si el merchant ya está desactivado")
+    public void shouldThrowExceptionWhenDisableAlreadyDisabledMerchant() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        false
+                )));
+
+        assertThrows(IllegalStateException.class, () -> {
+            this._merchantService.disabled(VALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza NoSuchElementException si no se logra desactivar el merchant")
+    public void shouldThrowNoSuchElementExceptionWhenMerchantCannotBeDisabled() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        true
+                )));
+
+        when(_merchantRepository.disabledMerchant(VALID_ID))
+                .thenReturn(0);
+
+        assertThrows(NoSuchElementException.class, () -> {
+            this._merchantService.disabled(VALID_ID);
+        });
+    }
+
+    @Test
+    @DisplayName("Retorna mensaje de éxito al desactivar un merchant activo correctamente")
+    public void shouldReturnSuccessMessageWhenMerchantIsDisabled() {
+
+        when(_merchantRepository.findById(VALID_ID))
+                .thenReturn(Optional.ofNullable(createOjectMerchant(
+                        true
+                )));
+
+        when(_merchantRepository.disabledMerchant(VALID_ID))
+                .thenReturn(1);
+
+        String message = this._merchantService.disabled(VALID_ID);
+
+        assertNotNull(message);
+        assertFalse(message.isEmpty());
+        assertEquals("Deactivation successful", message);
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalArgumentException si el ID del merchant es inválido en update")
+    public void shouldThrowExceptionWhenUpdatingWithInvalidUUID() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            _merchantService.update(INVALID_ID, createMerchantUpdateDto());
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza NoSuchElementException si el merchant no existe al intentar actualizar")
+    public void shouldThrowExceptionWhenUpdatingNonExistingMerchant() {
+        when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> {
+            _merchantService.update(VALID_ID, createMerchantUpdateDto());
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalStateException si el merchant está activo y se intenta actualizar")
+    public void shouldThrowExceptionWhenUpdatingActiveMerchant() {
+        Merchant activeMerchant = createOjectMerchant(false);
+        when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.of(activeMerchant));
+
+        assertThrows(IllegalStateException.class, () -> {
+            _merchantService.update(VALID_ID, createMerchantUpdateDto());
+        });
+    }
+
+    @Test
+    @DisplayName("Lanza IllegalStateException si el merchant está inactivo y se intenta actualizar")
+    public void shouldThrowExceptionWhenUpdatingInactiveMerchant() {
+        Merchant inactiveMerchant = createOjectMerchant(false);
+        when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.of(inactiveMerchant));
+
+        assertThrows(IllegalStateException.class, () -> {
+            _merchantService.update(VALID_ID, createMerchantUpdateDto());
+        });
+    }
+
+    private MerchantUpdateDto createMerchantUpdateDto() {
+        return MerchantUpdateDto.builder()
+                .name("Updated Name")
+                .email("updated@mail.com")
+                .address("New Address 123")
+                .website("https://updated.com")
+                .description("Updated description")
+                .cardNumber("1111-2222-3333-4444")
+                .build();
     }
 
     private List<Merchant> findAllMerchant(){
@@ -141,44 +305,29 @@ public class MerchantServiceTest {
 
         merchants.add(
                 createOjectMerchant(
-                        "test@gmail.com",
-                        "test",
-                        "la casa de test",
-                        "test@gmail.com",
-                        "comercio de test",
-                        "1234567891234567852",
-                        "b56d4b9b-32b3-4a97-9e53-74a8b6f2db23"
+                        true
                 )
         );
 
         merchants.add(
                 createOjectMerchant(
-                        "test1@gmail.com",
-                        "test1",
-                        "la casa de test1",
-                        "test1@gmail.com",
-                        "comercio de test1",
-                        "1234567891234567854",
-                        "b56d4b9b-32b3-4a97-9e53-74a8b6f2db21"
+                        true
                 )
         );
 
         return merchants;
     }
 
-    private Merchant createOjectMerchant(String email, String name,
-                                         String address, String website,
-                                         String description, String cardNumber,
-                                         String merchatId){
+    private Merchant createOjectMerchant(boolean status){
         return Merchant.builder()
-                .merchantId(merchatId)
-                .email(email)
-                .name(name)
-                .address(address)
-                .website(website)
-                .description(description)
-                .status(true)
-                .cardNumber(cardNumber)
+                .merchantId("b56d4b9b-32b3-4a97-9e53-74a8b6f2db24")
+                .email("test1@gmail.com")
+                .name("test1")
+                .address("la casa de test1")
+                .website("test1@gmail.com")
+                .description("comercio de test1")
+                .status(status)
+                .cardNumber("1234567891234567854")
                 .build();
     }
 
