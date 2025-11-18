@@ -35,7 +35,7 @@ public class MerchantServiceTest {
     private final static String VALID_ID = "b56d4b9b-32b3-4a97-9e53-74a8b6f2db24";
 
     @Test
-    @DisplayName("No permite guardar un merchant si el nombre ya existe")
+    @DisplayName("Does not allow saving a merchant if the name already exists")
     public void shouldNotAllowDuplicateMerchantName() {
 
         this.mockIfEmailExists(false);
@@ -47,7 +47,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("No permite guardar un merchant si el email ya existe")
+    @DisplayName("Does not allow saving a merchant if the email already exists")
     public void shouldNotAllowDuplicateMerchantEmail() {
 
         this.mockIfEmailExists(true);
@@ -58,7 +58,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Debe guardar un merchant correctamente cuando no existen duplicados")
+    @DisplayName("Should save a merchant successfully when no duplicates exist")
     public void shouldSaveMerchantSuccessfully() {
         this.mockIfEmailExists(false);
         this.mockIfNameExists(false);
@@ -76,7 +76,7 @@ public class MerchantServiceTest {
 
 
     @Test
-    @DisplayName("Debe retornar todos los merchants correctamente")
+    @DisplayName("Should return all merchants correctly")
     public void shouldReturnAllMerchants(){
         when(_merchantRepository.findAll())
                 .thenReturn(findAllMerchant());
@@ -87,7 +87,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Debe retornar lista vacía cuando el repositorio devuelve null")
+    @DisplayName("Should return an empty list when the repository returns null")
     public void shouldReturnEmptyListWhenRepositoryReturnsNull(){
         when(_merchantRepository.findAll())
                 .thenReturn(Collections.emptyList());
@@ -98,7 +98,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Debe retornar un merchant válido cuando se busca por ID existente")
+    @DisplayName("Should return a valid merchant when searching by existing ID")
     public void shouldReturnMerchantWhenIdExists(){
         when(_merchantRepository.findById(VALID_ID))
                 .thenReturn(Optional.of(
@@ -113,7 +113,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar excepción cuando se busca un ID inexistente")
+    @DisplayName("Should throw an exception when searching for a non-existing ID")
     public void shouldNotFindMerchantWhenIdDoesNotExist() {
         when(_merchantRepository.findById(VALID_ID))
                 .thenReturn(Optional.empty());
@@ -124,7 +124,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalArgumentException al buscar merchant con UUID inválido")
+    @DisplayName("Throws IllegalArgumentException when searching for merchant with invalid UUID")
     public void shouldThrowExceptionForInvalidUUID() {
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -132,9 +132,8 @@ public class MerchantServiceTest {
         });
     }
 
-    //test
     @Test
-    @DisplayName("Lanza IllegalArgumentException al activar merchant con UUID inválido")
+    @DisplayName("Throws IllegalArgumentException when activating merchant with invalid UUID")
     public void shouldThrowExceptionWhenUUIDIsInvalid() {
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -143,7 +142,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalStateException al intentar activar un merchant ya activo")
+    @DisplayName("Throws IllegalStateException when trying to activate an already active merchant")
     public void shouldThrowExceptionWhenMerchantIsAlreadyActive() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -157,7 +156,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar NoSuchElementException si no se activa ningún merchant")
+    @DisplayName("Should throw NoSuchElementException if no merchant is activated")
     public void shouldThrowNoSuchElementExceptionWhenNoMerchantIsActivated() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -174,7 +173,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Retorna mensaje de éxito al activar un merchant existente correctamente")
+    @DisplayName("Returns success message when an existing merchant is activated successfully")
     public void shouldReturnActivateSuccessWhenMerchantIsActivated() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -191,7 +190,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalArgumentException al desactivar un merchant con UUID inválido")
+    @DisplayName("Throws IllegalArgumentException when deactivating a merchant with invalid UUID")
     public void shouldThrowExceptionWhenDisableMerchantWithInvalidUUID() {
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -200,7 +199,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalStateException si el merchant ya está desactivado")
+    @DisplayName("Throws IllegalStateException if the merchant is already deactivated")
     public void shouldThrowExceptionWhenDisableAlreadyDisabledMerchant() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -214,7 +213,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza NoSuchElementException si no se logra desactivar el merchant")
+    @DisplayName("Throws NoSuchElementException if the merchant cannot be deactivated")
     public void shouldThrowNoSuchElementExceptionWhenMerchantCannotBeDisabled() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -231,7 +230,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Retorna mensaje de éxito al desactivar un merchant activo correctamente")
+    @DisplayName("Returns success message when an active merchant is deactivated successfully")
     public void shouldReturnSuccessMessageWhenMerchantIsDisabled() {
 
         when(_merchantRepository.findById(VALID_ID))
@@ -250,7 +249,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalArgumentException si el ID del merchant es inválido en update")
+    @DisplayName("Throws IllegalArgumentException if the merchant ID is invalid on update")
     public void shouldThrowExceptionWhenUpdatingWithInvalidUUID() {
         assertThrows(IllegalArgumentException.class, () -> {
             _merchantService.update(INVALID_ID, createMerchantUpdateDto());
@@ -258,7 +257,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza NoSuchElementException si el merchant no existe al intentar actualizar")
+    @DisplayName("Throws NoSuchElementException if the merchant does not exist when updating")
     public void shouldThrowExceptionWhenUpdatingNonExistingMerchant() {
         when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.empty());
 
@@ -268,7 +267,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalStateException si el merchant está activo y se intenta actualizar")
+    @DisplayName("Throws IllegalStateException if the merchant is active when updating")
     public void shouldThrowExceptionWhenUpdatingActiveMerchant() {
         Merchant activeMerchant = createOjectMerchant(false);
         when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.of(activeMerchant));
@@ -279,7 +278,7 @@ public class MerchantServiceTest {
     }
 
     @Test
-    @DisplayName("Lanza IllegalStateException si el merchant está inactivo y se intenta actualizar")
+    @DisplayName("Throws IllegalStateException if the merchant is inactive when updating")
     public void shouldThrowExceptionWhenUpdatingInactiveMerchant() {
         Merchant inactiveMerchant = createOjectMerchant(false);
         when(_merchantRepository.findById(VALID_ID)).thenReturn(Optional.of(inactiveMerchant));

@@ -30,7 +30,7 @@ public class MerchantRepositoryTest {
                 .email("calle@gmail.com")
                 .address("123 Calle Principal")
                 .website("https://wwwcalle.com")
-                .description("Comercio de prueba para ")
+                .description("Test merchant")
                 .status(true)
                 .cardNumber("1234-5678-9012-3456")
                 .build();
@@ -41,7 +41,7 @@ public class MerchantRepositoryTest {
                 .email("calle2@gmail.com")
                 .address("123 Calle Principal")
                 .website("https://wwwcalle.com")
-                .description("Comercio de prueba para ")
+                .description("Test merchant")
                 .status(false)
                 .cardNumber("1234-5678-9012-3456")
                 .build();
@@ -50,79 +50,71 @@ public class MerchantRepositoryTest {
     }
 
     @Test
-    @DisplayName("existsByEmail devuelve true si el email existe")
-    public void existsByEmailShouldReturnTrue(){
-
-        boolean emailExists  = _merchantRepository.existsByEmail("calle@gmail.com");
-        assertTrue(emailExists );
+    @DisplayName("existsByEmail returns true if the email exists")
+    public void existsByEmailShouldReturnTrue() {
+        boolean emailExists = _merchantRepository.existsByEmail("calle@gmail.com");
+        assertTrue(emailExists);
     }
 
     @Test
-    @DisplayName("existsByEmail devuelve false si el email no existe")
-    public void existsByEmailShouldReturnFalse(){
-
-        boolean emailExists  = _merchantRepository.existsByEmail("calle@l.com");
+    @DisplayName("existsByEmail returns false if the email does not exist")
+    public void existsByEmailShouldReturnFalse() {
+        boolean emailExists = _merchantRepository.existsByEmail("calle@l.com");
         assertFalse(emailExists);
     }
 
     @Test
-    @DisplayName("xistsByName devuelve true si el nombre existe")
-    public void existsByNameShouldReturnTrue(){
-
+    @DisplayName("existsByName returns true if the name exists")
+    public void existsByNameShouldReturnTrue() {
         boolean nameExists = _merchantRepository.existsByName("Calle principal");
         assertTrue(nameExists);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"depay", "saga"})
-    @DisplayName("existsByName devuelve false para nombres que no existen")
-    public void existsByNameShouldReturnFalseForUnknownNames(String name){
-
-        boolean nameExists  = _merchantRepository.existsByName(name);
+    @DisplayName("existsByName returns false for unknown names")
+    public void existsByNameShouldReturnFalseForUnknownNames(String name) {
+        boolean nameExists = _merchantRepository.existsByName(name);
         assertFalse(nameExists);
     }
 
     @Test
-    @DisplayName("Deshabilita correctamente un merchant existente")
-    public void disableMerchantShouldReturnOneForExistingMerchant(){
-
+    @DisplayName("disableMerchant correctly disables an existing merchant")
+    public void disableMerchantShouldReturnOneForExistingMerchant() {
         _merchantRepository.disabledMerchant("3fa85f64-5717-4562-b3fc-2c963f66afa6");
 
         em.flush();
         em.clear();
 
         Merchant merchant = _merchantRepository.findById("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                .orElseThrow(() -> new AssertionError("Merchant no encontrado"));
+                .orElseThrow(() -> new AssertionError("Merchant not found"));
         assertFalse(merchant.getStatus());
     }
 
     @Test
-    @DisplayName("disableMerchant devuelve 0 cuando el merchant no existe")
-    public void disableMerchantShouldReturnZeroForNonExistingMerchant(){
-
+    @DisplayName("disableMerchant returns 0 when the merchant does not exist")
+    public void disableMerchantShouldReturnZeroForNonExistingMerchant() {
         int count = _merchantRepository.disabledMerchant("3fa85f24-5717-4562-b3fc-2c963f66afa6");
         assertEquals(0, count);
     }
 
     @Test
-    @DisplayName("activateMerchant devuelve 0 cuando el merchant no existe")
-    public void activateMerchantShouldReturnZeroForNonExistingMerchant(){
-
+    @DisplayName("activateMerchant returns 0 when the merchant does not exist")
+    public void activateMerchantShouldReturnZeroForNonExistingMerchant() {
         int count = _merchantRepository.activeMerchant("3fa85f24-5717-4562-b3fc-2c963f66afa6");
         assertEquals(0, count);
     }
 
     @Test
-    @DisplayName("activar correctamente un merchant existente")
-    public void activateMerchantShouldReturnOneForExistingMerchant(){
-
+    @DisplayName("activateMerchant correctly activates an existing merchant")
+    public void activateMerchantShouldReturnOneForExistingMerchant() {
         _merchantRepository.activeMerchant("3fa85f64-5717-4562-b3fc-2c963f66afa2");
 
         em.flush();
         em.clear();
 
         Merchant merchant = _merchantRepository.findById("3fa85f64-5717-4562-b3fc-2c963f66afa2")
-                .orElseThrow(() -> new AssertionError("Merchant no encontrado"));
+                .orElseThrow(() -> new AssertionError("Merchant not found"));
         assertTrue(merchant.getStatus());
     }
 }
